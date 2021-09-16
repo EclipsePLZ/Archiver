@@ -69,8 +69,9 @@ namespace Archiver
             }
             Tree = treeNodes[0];
             Table = new Dictionary<char, string>();
-			// TODO: заполнить таблицу кодирования Table на основе обхода построенного дерева
-            /*//*/Table.Add('\0', "0"); // это временная заглушка!!! Эту строчку нужно будет потом убрать, т.к. признак конца файла должен быть уже добавлен в таблицу, как и все остальные символы
+            // TODO: заполнить таблицу кодирования Table на основе обхода построенного дерева
+            FillTable(Tree, "");
+            //Table.Add('\0', "0"); // это временная заглушка!!! Эту строчку нужно будет потом убрать, т.к. признак конца файла должен быть уже добавлен в таблицу, как и все остальные символы
         }
 
         private void FindMinNodesInTree(List<HuffmanTree> tree,ref int minNode1,ref int minNode2) {
@@ -93,6 +94,16 @@ namespace Archiver
                 }
                 else if (tree[i].freq < tree[minNode2].freq)
                     minNode2 = i;
+            }
+        }
+
+        private void FillTable(HuffmanTree node, string code) {
+            if (node.isTerminal) {
+                Table[node.ch] = code;
+            }
+            else {
+                FillTable(node.left, code + "0");
+                FillTable(node.rigth, code + "1");
             }
         }
 
