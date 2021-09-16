@@ -135,13 +135,7 @@ namespace Archiver
                 // TODO: побитово (!) разбираем архив
                 if (nodeTree.isTerminal) {
                     char symb = nodeTree.ch;
-                    if (symb == '\n') {
-                        sw.WriteLine();
-                        nodeTree = Tree;
-                    }
-                    else if (symb == '\0') {
-                        break;
-                    }
+                    if (symb == '\0') break;
                     else {
                         sw.Write(symb);
                         nodeTree = Tree;
@@ -167,8 +161,8 @@ namespace Archiver
             if (args.Length == 0)
             {
                 var hi = new HuffmanInfo("freq.txt");
-                hi.Compress("etalon.txt", "etalon.arc");
-                hi.Decompress("etalon.arc", "etalon_dec.txt");
+                hi.Compress("etalon2.txt", "etalon2.arc");
+                hi.Decompress("etalon2.arc", "etalon_dec2.txt");
                 return;
             }
             if (args.Length != 3 || args[0] != "zip" && args[0] != "unzip")
