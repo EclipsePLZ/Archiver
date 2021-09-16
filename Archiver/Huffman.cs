@@ -30,6 +30,7 @@ namespace Archiver
     }
     class HuffmanInfo
     {
+        List<HuffmanTree> treeNodes = new List<HuffmanTree>();
 		HuffmanTree Tree; // дерево кода Хаффмана, потребуется для распаковки
         Dictionary<char,string> Table; // словарь, хранящий коды всех символов, будет удобен для сжатия
         public HuffmanInfo(string fileName)
@@ -41,21 +42,60 @@ namespace Archiver
 			{
 				if (line.Length == 0)
 				{
-					//TODO: отдельная обработка строки, которой соответствует частота символа "конец строки" 
+                    //TODO: отдельная обработка строки, которой соответствует частота символа "конец строки" 
+                    line = sr.ReadLine().Trim();
+                    double freq = Convert.ToDouble(line);
+                    treeNodes.Add(new HuffmanTree('\n', freq));
 				}
 				else
 				{
-					//TODO: создаем вершину (лист) дерева с частотой очередного символа
+                    //TODO: создаем вершину (лист) дерева с частотой очередного символа
+                    char ch = line[0];
+                    double freq = Convert.ToDouble(line.Substring(2));
+                    treeNodes.Add(new HuffmanTree(ch, freq));
 				}
 			}
             sr.Close();
             // TODO: добавить еще одну вершину-лист, соответствующую символу с кодом 0 ('\0'), который будет означать конец файла. Частота такого символа, очевидно, должна быть очень маленькой, т.к. такой символ встречается только 1 раз во всем файле (можно даже сделать частоту = 0)
-			// TODO: построить дерево кода Хаффмана путем последовательного объединения листьев
-			// Tree = ...
-			Table = new Dictionary<char, string>();
+            treeNodes.Add(new HuffmanTree('\0', 0));
+            // TODO: построить дерево кода Хаффмана путем последовательного объединения листьев
+            int minNode1 = 0, minNode2 = 0;
+            while (treeNodes.Count > 1) {
+                FindMinNodesInTree(treeNodes, ref minNode1, ref minNode2);
+                HuffmanTree newNode = new HuffmanTree(treeNodes[minNode1], treeNodes[minNode2]);
+                treeNodes.RemoveAt(minNode2);
+                treeNodes.RemoveAt(minNode1);
+                treeNodes.Add(newNode);
+            }
+            Tree = treeNodes[0];
+            Table = new Dictionary<char, string>();
 			// TODO: заполнить таблицу кодирования Table на основе обхода построенного дерева
             /*//*/Table.Add('\0', "0"); // это временная заглушка!!! Эту строчку нужно будет потом убрать, т.к. признак конца файла должен быть уже добавлен в таблицу, как и все остальные символы
         }
+
+        private void FindMinNodesInTree(List<HuffmanTree> tree,ref int minNode1,ref int minNode2) {
+            if (tree[0].freq < tree[1].freq) {
+                minNode1 = 0;
+                minNode2 = 1;
+            }
+            else {
+                minNode1 = 1;
+                minNode2 = 0;
+            }
+
+            for(int i = 2; i < tree.Count(); i++) {
+                if (tree[i].freq < tree[minNode1].freq) {
+                    int temp = minNode1;
+                    minNode1 = i;
+
+                    if (tree[temp].freq < tree[minNode2].freq)
+                        minNode2 = temp;
+                }
+                else if (tree[i].freq < tree[minNode2].freq)
+                    minNode2 = i;
+            }
+        }
+
         public void Compress(string inpFile, string outFile)
         {
             var sr = new StreamReader(inpFile, Encoding.Unicode);
