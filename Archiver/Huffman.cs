@@ -63,8 +63,8 @@ namespace Archiver
             while (treeNodes.Count > 1) {
                 FindMinNodesInTree(treeNodes, ref minNode1, ref minNode2);
                 HuffmanTree newNode = new HuffmanTree(treeNodes[minNode1], treeNodes[minNode2]);
-                treeNodes.RemoveAt(minNode2);
-                treeNodes.RemoveAt(minNode1);
+                treeNodes.RemoveAt(Math.Max(minNode1,minNode2));
+                treeNodes.RemoveAt(Math.Min(minNode1,minNode2));
                 treeNodes.Add(newNode);
             }
             Tree = treeNodes[0];
@@ -115,6 +115,10 @@ namespace Archiver
             while ((line = sr.ReadLine()) != null)
             {
                 // TODO: посимвольно обрабатываем строку, кодируем, пишем в sw
+                foreach(char symb in line) {
+                    sw.WriteWord(Table[symb]);
+                }
+                sw.WriteWord(Table['\n']);
             }
             sr.Close();
             sw.WriteWord(Table['\0']); // записываем признак конца файла
@@ -125,9 +129,26 @@ namespace Archiver
             var sr = new ArchReader(archFile); // нужно побитовое чтение
             var sw = new StreamWriter(txtFile, false, Encoding.Unicode);
             byte curBit;
+            HuffmanTree nodeTree = Tree;
             while (sr.ReadBit(out curBit))
             {
                 // TODO: побитово (!) разбираем архив
+                if (nodeTree.isTerminal) {
+                    char symb = nodeTree.ch;
+                    if (symb == '\n') {
+                        sw.WriteLine();
+                        nodeTree = Tree;
+                    }
+                    else if (symb == '\0') {
+                        break;
+                    }
+                    else {
+                        sw.Write(symb);
+                        nodeTree = Tree;
+                    }
+                }
+                if (curBit == 0) nodeTree = nodeTree.left;
+                else if (curBit == 1) nodeTree = nodeTree.rigth;
             }
             sr.Finish();
             sw.Close();
