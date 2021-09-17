@@ -61,10 +61,9 @@ namespace Archiver
             // TODO: построить дерево кода Хаффмана путем последовательного объединения листьев
             int minNode1 = 0, minNode2 = 0;
             while (treeNodes.Count > 1) {
-                FindMinNodesInTree(treeNodes, ref minNode1, ref minNode2);
+                FindTwoMinNodesInTree(treeNodes, ref minNode1, ref minNode2);
                 HuffmanTree newNode = new HuffmanTree(treeNodes[minNode1], treeNodes[minNode2]);
-                treeNodes.RemoveAt(Math.Max(minNode1,minNode2));
-                treeNodes.RemoveAt(Math.Min(minNode1,minNode2));
+                DeleteMinNodes(ref treeNodes, minNode1, minNode2);
                 treeNodes.Add(newNode);
             }
             Tree = treeNodes[0];
@@ -74,7 +73,7 @@ namespace Archiver
             //Table.Add('\0', "0"); // это временная заглушка!!! Эту строчку нужно будет потом убрать, т.к. признак конца файла должен быть уже добавлен в таблицу, как и все остальные символы
         }
 
-        private void FindMinNodesInTree(List<HuffmanTree> tree,ref int minNode1,ref int minNode2) {
+        private void FindTwoMinNodesInTree(List<HuffmanTree> tree,ref int minNode1,ref int minNode2) {
             if (tree[0].freq < tree[1].freq) {
                 minNode1 = 0;
                 minNode2 = 1;
@@ -95,6 +94,11 @@ namespace Archiver
                 else if (tree[i].freq < tree[minNode2].freq)
                     minNode2 = i;
             }
+        }
+
+        private void DeleteMinNodes(ref List<HuffmanTree> tree, int minNode1, int minNode2) {
+            treeNodes.RemoveAt(Math.Max(minNode1, minNode2));
+            treeNodes.RemoveAt(Math.Min(minNode1, minNode2));
         }
 
         private void FillTable(HuffmanTree node, string code) {
@@ -135,14 +139,17 @@ namespace Archiver
                 // TODO: побитово (!) разбираем архив
                 if (nodeTree.isTerminal) {
                     char symb = nodeTree.ch;
-                    if (symb == '\0') break;
-                    else {
+                    if (symb == '\0')
+                        break;
+                    //if (symb == '\n') sw.WriteLine();   От этого зависит размер файла
+                    else
                         sw.Write(symb);
-                        nodeTree = Tree;
-                    }
+                    nodeTree = Tree;
                 }
-                if (curBit == 0) nodeTree = nodeTree.left;
-                else if (curBit == 1) nodeTree = nodeTree.rigth;
+                if (curBit == 0)
+                    nodeTree = nodeTree.left;
+                else if (curBit == 1)
+                    nodeTree = nodeTree.rigth;
             }
             sr.Finish();
             sw.Close();
@@ -161,8 +168,8 @@ namespace Archiver
             if (args.Length == 0)
             {
                 var hi = new HuffmanInfo("freq.txt");
-                hi.Compress("etalon2.txt", "etalon2.arc");
-                hi.Decompress("etalon2.arc", "etalon_dec2.txt");
+                hi.Compress("etalon.txt", "etalon.arc");
+                hi.Decompress("etalon.arc", "etalon_dec.txt");
                 return;
             }
             if (args.Length != 3 || args[0] != "zip" && args[0] != "unzip")
